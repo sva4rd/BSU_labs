@@ -10,6 +10,7 @@ int main(int argc, char* argv[]) {
     std::string binFileName;
     std::cout << "Enter bin file name: ";
     getline(std::cin, binFileName);
+    binFileName = "files/" + binFileName;
     std::cout << "Enter records count: ";
     int recordsCount;
     std::cin >> recordsCount;
@@ -53,6 +54,7 @@ int main(int argc, char* argv[]) {
     std::cout << "\nWrite name for Report file: ";
     std::string reportFile;
     std::cin >> reportFile;
+    reportFile = "files/" + reportFile;
     double salary;
     std::cout << "Write salary: ";
     std::cin >> salary;
