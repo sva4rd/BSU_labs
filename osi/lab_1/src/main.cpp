@@ -5,89 +5,88 @@
 #include <string>
 #include "../include/employee.h"
 
-int main(int argc, char* argv[]) {
+template < typename T >
+void enterData(std::string &FileName, T &data, std::string fileType, std::string dataType)
+{
+    std::cout << "Enter " + fileType + " file name: ";
+    getline(std::cin, FileName);
+    FileName = "files/" + FileName;
+    std::cout << "Enter " + dataType+ ": ";
+    std::cin >> data;
+}
 
-    std::string binFileName;
-    std::cout << "Enter bin file name: ";
-    getline(std::cin, binFileName);
-    binFileName = "files/" + binFileName;
-    std::cout << "Enter records count: ";
-    int recordsCount;
-    std::cin >> recordsCount;
-
-    STARTUPINFO si; 
+void createProc(std::string command)
+{
+    STARTUPINFO si;
     ZeroMemory(&si, sizeof(si));
     PROCESS_INFORMATION pi;
     ZeroMemory(&pi, sizeof(pi));
 
-    std::string command = "Creator.exe " + binFileName + " " + std::to_string(recordsCount);
     TCHAR commandLine[MAX_PATH];
     _tcscpy_s(commandLine, MAX_PATH, command.c_str());
-    /*std::wstring widestr = std::wstring(command.begin(), command.end());
-    const wchar_t* comm = widestr.c_str();
-    _tcscpy_s(commandLine, MAX_PATH, comm);*/
-
     if (!CreateProcess(NULL, commandLine, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
     {
-        std::cerr << "Error creating process (Creator)";
-        return 1;
+        std::cerr << "Error: Can't create process";
+        exit(1);
     }
 
     WaitForSingleObject(pi.hProcess, INFINITE);
     CloseHandle(pi.hProcess);
+}
 
+void outEmployees(std::string binFileName)
+{
     std::ifstream readFile(binFileName, std::ios::binary);
     if (!readFile) {
         std::cerr << "Error: Could not open bin file";
-        return 1;
+        exit(1);
     }
 
     employee person;
-    std::cout << "\nEmployee list:\n";
+    std::cout << "Employee list:\n";
     while (readFile.read(reinterpret_cast<char*>(&person), sizeof(person))) {
-        std::cout << "ID: " << person.num << '\n';
-        std::cout << "Name: " << person.name << '\n';
-        std::cout << "Hours: " << person.hours << '\n';
+        std::cout << "\tID: " << person.num << '\n';
+        std::cout << "\tName: " << person.name << '\n';
+        std::cout << "\tHours: " << person.hours << '\n';
         std::cout << '\n';
     }
-    
-    std::cout << "\nWrite name for Report file: ";
-    std::string reportFile;
-    std::cin >> reportFile;
-    reportFile = "files/" + reportFile;
-    double salary;
-    std::cout << "Write salary: ";
-    std::cin >> salary;
     readFile.close();
+}
 
-    ZeroMemory(&si, sizeof(si));
-    si.cb = sizeof(si);
-    ZeroMemory(&pi, sizeof(pi));
-
-    command = "Reporter.exe " + binFileName + " " + reportFile + " " + std::to_string(salary);
-    _tcscpy_s(commandLine, MAX_PATH, command.c_str());
-    /*std::wstring widestrr = std::wstring(command.begin(), command.end());
-    const wchar_t* commm = widestrr.c_str();
-    _tcscpy_s(commandLine, MAX_PATH, commm);*/
-
-    if (!CreateProcess(NULL, commandLine, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
-    {
-        std::cerr << "Error creating process (Reporter)" << '\n';
-        return 1;
-    }
-
-    WaitForSingleObject(pi.hProcess, INFINITE);
-    CloseHandle(pi.hProcess);
-
-    readFile.open(reportFile);
+void outReport(std::string binFileName, std::string reportFileName)
+{
+    std::ifstream readFile;
+    readFile.open(reportFileName);
     if (!readFile) {
-        std::cerr << "Error: Could not open reporter file" << '\n';
-        return 1;
+        std::cerr << "Error: Could not open report file" << '\n';
+        exit(1);
     }
 
-    std::string line;
-    std::cout << '\n';
-    while (std::getline(readFile, line))
-        std::cout << line << '\n';
+    std::string record;
+    std::cout << "Report data:";
+    while (std::getline(readFile, record))
+        std::cout << record << '\n';
+    readFile.close();
+}
+
+int main(int argc, char* argv[]) 
+{
+    std::string binFileName;
+    int recordsCount;
+    enterData(binFileName, recordsCount, "bin", "employees count");
+
+    std::string command = "Creator.exe " + binFileName + " " + std::to_string(recordsCount);
+    createProc(command);
+    outEmployees(binFileName);
+    
+    std::string reportFileName;
+    double salary;
+    std::cin.ignore();
+    enterData(reportFileName, salary, "rep", "salary for hour");
+
+    command = "Reporter.exe " + binFileName + " " + reportFileName + " " + std::to_string(salary);
+    createProc(command);
+    outReport(binFileName, reportFileName);
+    
     return 0;
 }
