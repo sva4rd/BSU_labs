@@ -13,6 +13,11 @@ void enterData(std::string &FileName, T &data, std::string fileType, std::string
     FileName = "files/" + FileName;
     std::cout << "Enter " + dataType+ ": ";
     std::cin >> data;
+
+    if (fileType == "bin" && FileName.substr(FileName.size() - 4, FileName.size() - 1) != ".bin")
+        FileName += ".bin";
+    else if (fileType == "rep" && FileName.substr(FileName.size() - 4, FileName.size() - 1) != ".txt")
+        FileName += ".txt";
 }
 
 void createProc(std::string command)
@@ -63,9 +68,9 @@ void outReport(std::string binFileName, std::string reportFileName)
     }
 
     std::string record;
-    std::cout << "Report data:";
+    std::cout << "Report data:\n";
     while (std::getline(readFile, record))
-        std::cout << record << '\n';
+        std::cout << '\t' << record << '\n';
     readFile.close();
 }
 
