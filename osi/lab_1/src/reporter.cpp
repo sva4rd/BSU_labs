@@ -6,7 +6,7 @@
 void writeData(std::ifstream &binFile, std::ofstream &repFile, double salaryPerHour)
 {
     employee rec;
-    repFile << "\nEmployee \tName\tHours\tSalary\n";
+    repFile << "Employee \tName\tHours\tSalary\n";
     while (binFile.read((char*)(&rec), sizeof(rec)))
     {
         double salary = rec.hours * salaryPerHour;
